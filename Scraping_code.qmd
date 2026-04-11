@@ -1,6 +1,9 @@
 ---
-title: "Henry_testing"
-format: html
+title: 'scraping_code'
+format:
+  pdf: default
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r}
@@ -9,6 +12,7 @@ library(purrr)
 library(rvest)
 library(polite)
 library(httr)
+library(readr)
 ```
 
 ```{r}
@@ -151,7 +155,6 @@ scrape_ign <- function(game, appid) {
 
 ```
 
-
 ```{r}
 response <- GET("https://steamspy.com/api.php?request=all")
 
@@ -172,5 +175,12 @@ ign_data <- bind_rows(ign_rows)
 game_data <- steam_data |>
   full_join(ign_data, by = "appid")
 ```
+
+
+```{r}
+write_csv(game_data, "video_games.csv")
+```
+
+
 
 
