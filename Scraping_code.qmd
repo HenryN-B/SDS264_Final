@@ -45,23 +45,40 @@ parse_genres <- function(genres_list) {
 #' @return A tibble with game data 
 scrape_steam_game <- function(appid) {
   
-  Sys.sleep(3)
+  # wait can only request 200 every 5 minutes,
+  Sys.sleep(1.5)
   
   # Get game data from API
   game_response <- GET(str_c("https://store.steampowered.com/api/appdetails?appids=", appid, "&cc=us"))
   raw_data <- content(game_response, "parsed")
+  
+  if(is.null(raw_data[[as.character(appid)]]$data)) {
+    message("No data for appid: ", appid)  
+    return(NULL)
+  }
+  
+  
   game <- raw_data[[as.character(appid)]]$data
+  
+  if (is.null(game$type) || game$type != "game") {
+    return(NULL)
+  }
+  
+  if(game$type != "game") {
+    return()
+  }
   
   # Get player count from API 
   player_count_response <- GET(str_c("https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/?appid=", appid))
   raw_data <- content(player_count_response, "parsed")
   player_count = raw_data$response$player_count
   
+  
   # Check if the price is free 
-  if (is.null(game$price_overview$final)){
+  if (is.null(game$price_overview$initial)){
     price <- 0
   } else {
-    price <- game$price_overview$final / 100
+    price <- game$price_overview$initial / 100
   }
   
   # Get the CPU specs 
@@ -80,9 +97,10 @@ scrape_steam_game <- function(appid) {
        str_remove("<br>") |>   
        str_trim()
   
+  
   # Create return tibble
   tibble(
-    Name = game$name,
+    Name = str_remove_all(game$name, "[^a-zA-Z0-9-\\s]"),
     appid = appid,
     Price = price,
     genres = parse_genres(game$genres),
@@ -116,7 +134,7 @@ scrape_ign <- function(game, appid) {
     str_remove_all("[^a-zA-Z0-9-]")
     
   # Wait a random amount of time cuz otherwise ign sometimes blocks 
-  Sys.sleep(runif(1, 2, 5)) 
+  Sys.sleep(runif(1, 1, 3)) 
   
   url = str_c("https://www.ign.com/games/", name)
   
@@ -124,7 +142,7 @@ scrape_ign <- function(game, appid) {
   html <- tryCatch(
     read_html(url),
     error = function(e) {
-      message("Failed to scrape: ", game, " | URL: ", url, " | Error: ", e$message)
+      message("Failed to scrape: ", game, " | URL: ", url, " | Error: ", e$message, "\n")
       return(NULL)
     }
   )
@@ -162,7 +180,7 @@ raw_data <- content(response, "parsed")
 
 games <- numeric()
 
-for (i in 1:20) {
+for (i in 1:500) {
   games <- c(games, raw_data[[i]]$appid)
 }
 
@@ -174,13 +192,6 @@ ign_data <- bind_rows(ign_rows)
 
 game_data <- steam_data |>
   full_join(ign_data, by = "appid")
-```
 
-
-```{r}
 write_csv(game_data, "video_games.csv")
 ```
-
-
-
-
