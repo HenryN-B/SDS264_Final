@@ -1,0 +1,197 @@
+---
+title: 'scraping_code'
+format:
+  pdf: default
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+library(tidyverse)
+library(purrr)
+library(rvest)
+library(polite)
+library(httr)
+library(readr)
+```
+
+```{r}
+
+# Found the function documentation style at https://r-pkgs.org/man.html
+
+#' Parses genres
+#'
+#' This helper function takes A list of genre lists and combines into one string. 
+#'
+#' @param genres_list A list of genre lists 
+#' @return A single string with all the genres.
+parse_genres <- function(genres_list) {
+  
+  genres = character()
+  
+  for (genre in genres_list) {
+    genres <- c(genres, genre$description)
+  }
+  
+  return(paste(genres, collapse = ", "))
+}
+
+
+#' Scrape a games Steam data
+#'
+#' This function takes in a Steam appid and returns scraped data about the game
+#'
+#' @param appid A Steam appid
+#' @return A tibble with game data 
+scrape_steam_game <- function(appid) {
+  
+  # wait can only request 200 every 5 minutes,
+  Sys.sleep(1.5)
+  
+  # Get game data from API
+  game_response <- GET(str_c("https://store.steampowered.com/api/appdetails?appids=", appid, "&cc=us"))
+  raw_data <- content(game_response, "parsed")
+  
+  if(is.null(raw_data[[as.character(appid)]]$data)) {
+    message("No data for appid: ", appid)  
+    return(NULL)
+  }
+  
+  
+  game <- raw_data[[as.character(appid)]]$data
+  
+  if (is.null(game$type) || game$type != "game") {
+    return(NULL)
+  }
+  
+  if(game$type != "game") {
+    return()
+  }
+  
+  # Get player count from API 
+  player_count_response <- GET(str_c("https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/?appid=", appid))
+  raw_data <- content(player_count_response, "parsed")
+  player_count = raw_data$response$player_count
+  
+  
+  # Check if the price is free 
+  if (is.null(game$price_overview$initial)){
+    price <- 0
+  } else {
+    price <- game$price_overview$initial / 100
+  }
+  
+  # Get the CPU specs 
+  cpu <- str_extract(
+      as.character(game$pc_requirements$minimum),
+      "Processor:</strong>.*?<br>") |>
+       str_remove("Processor:</strong>") |>
+       str_remove("<br>") |>   
+       str_trim()
+
+  # Get the GPU specs 
+  gpu <- str_extract(
+      as.character(game$pc_requirements$minimum),
+      "Graphics:</strong>.*?<br>") |>
+       str_remove("Graphics:</strong>") |>
+       str_remove("<br>") |>   
+       str_trim()
+  
+  
+  # Create return tibble
+  tibble(
+    Name = str_remove_all(game$name, "[^a-zA-Z0-9-\\s]"),
+    appid = appid,
+    Price = price,
+    genres = parse_genres(game$genres),
+    num_reviews = game$recommendations$total,
+    Release = mdy(game$release_date$date),
+    Developer = paste(game$developers, collapse = ", "),
+    Publisher = paste(game$publishers, collapse = ", "),
+    isWindows = game$platforms$windows,
+    isMac = game$platforms$mac,
+    isLinux = game$platforms$linux,
+    metacritic_score = game$metacritic$score,
+    player_count = player_count,
+    min_pc_cpu = cpu,
+    min_pc_gpu = gpu
+  )
+}
+
+
+#' Scrape a games Steam data
+#'
+#' This function takes in a Steam appid and returns scraped data about the game
+#'
+#' @param appid A Steam appid
+#' @return A tibble with game data 
+scrape_ign <- function(game, appid) {
+  
+  # Standardize names 
+  name = game |>
+    str_to_lower() |>
+    str_replace_all(" ", "-") |>
+    str_remove_all("[^a-zA-Z0-9-]")
+    
+  # Wait a random amount of time cuz otherwise ign sometimes blocks 
+  Sys.sleep(runif(1, 1, 3)) 
+  
+  url = str_c("https://www.ign.com/games/", name)
+  
+  # If ign page does not exist then send a warning message to consile and set html to null
+  html <- tryCatch(
+    read_html(url),
+    error = function(e) {
+      message("Failed to scrape: ", game, " | URL: ", url, " | Error: ", e$message, "\n")
+      return(NULL)
+    }
+  )
+  
+  # Check if html is null and return 
+  if (is.null(html)) {
+    return(tibble(appid = appid, ign_score = NA, community_score = NA))
+  }
+  
+  # Get ign_score
+  ign_score <- html |>
+    html_nodes("[data-cy='review-score-hexagon-content-wrapper'] figcaption") |>
+    html_text()
+  
+  #get com_spore
+  com_score <- html |>
+    html_nodes("[data-cy='score-rating-small']") |>
+    html_text()
+  
+  # Create return tibble
+  tibble(
+    appid = appid,
+    ign_score = ign_score[1],
+    community_score = com_score[2]
+  )
+}
+
+
+```
+
+```{r}
+response <- GET("https://steamspy.com/api.php?request=all")
+
+raw_data <- content(response, "parsed")
+
+games <- numeric()
+
+for (i in 1:500) {
+  games <- c(games, raw_data[[i]]$appid)
+}
+
+steam_rows <- map(games, scrape_steam_game)
+steam_data <- bind_rows(steam_rows)
+
+ign_rows <-map2(steam_data$Name, steam_data$appid, scrape_ign)
+ign_data <- bind_rows(ign_rows)
+
+game_data <- steam_data |>
+  full_join(ign_data, by = "appid")
+
+write_csv(game_data, "video_games.csv")
+```
