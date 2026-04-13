@@ -7,6 +7,8 @@ editor_options:
 ---
 
 ```{r}
+#| include: FALSE
+
 library(tidyverse)
 library(purrr)
 library(rvest)
@@ -15,13 +17,15 @@ library(httr)
 library(readr)
 ```
 
-```{r}
+Full dataset and all csv's are viable on the github page for this project [here](https://github.com/HenryN-B/Mini-Project-2)
 
+```{r}
 # Found the function documentation style at https://r-pkgs.org/man.html
 
 #' Parses genres
 #'
-#' This helper function takes A list of genre lists and combines into one string. 
+#' This helper function takes A list of 
+#' genre lists and combines into one string. 
 #'
 #' @param genres_list A list of genre lists 
 #' @return A single string with all the genres.
@@ -39,7 +43,8 @@ parse_genres <- function(genres_list) {
 
 #' Scrape a games Steam data
 #'
-#' This function takes in a Steam appid and returns scraped data about the game
+#' This function takes in a 
+#' Steam appid and returns scraped data about the game
 #'
 #' @param appid A Steam appid
 #' @return A tibble with game data 
@@ -49,7 +54,9 @@ scrape_steam_game <- function(appid) {
   Sys.sleep(1.5)
   
   # Get game data from API
-  game_response <- GET(str_c("https://store.steampowered.com/api/appdetails?appids=", appid, "&cc=us"))
+  game_response <- GET(
+    str_c("https://store.steampowered.com/api/appdetails?appids=",
+    appid, "&cc=us"))
   raw_data <- content(game_response, "parsed")
   
   if(is.null(raw_data[[as.character(appid)]]$data)) {
@@ -60,7 +67,9 @@ scrape_steam_game <- function(appid) {
   game <- raw_data[[as.character(appid)]]$data
   
   # Get player count from API 
-  player_count_response <- GET(str_c("https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/?appid=", appid))
+  player_count_response <- GET(str_c(
+      "https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/?appid="
+      , appid))
   raw_data <- content(player_count_response, "parsed")
   player_count = raw_data$response$player_count
   
@@ -91,14 +100,14 @@ scrape_steam_game <- function(appid) {
   
   # Create return tibble
   tibble(
-    Name = str_remove_all(game$name, "[^a-zA-Z0-9-\\s]"),
+    name = str_remove_all(game$name, "[^a-zA-Z0-9-\\s]"),
     appid = appid,
-    Price = price,
+    price = price,
     genres = parse_genres(game$genres),
     num_reviews = game$recommendations$total,
-    Release = mdy(game$release_date$date),
-    Developer = paste(game$developers, collapse = ", "),
-    Publisher = paste(game$publishers, collapse = ", "),
+    release = mdy(game$release_date$date),
+    developer = paste(game$developers, collapse = ", "),
+    publisher = paste(game$publishers, collapse = ", "),
     isWindows = game$platforms$windows,
     isMac = game$platforms$mac,
     isLinux = game$platforms$linux,
@@ -112,7 +121,8 @@ scrape_steam_game <- function(appid) {
 
 #' Scrape a games Steam data
 #'
-#' This function takes in a Steam appid and returns scraped data about the game
+#' This function takes in a 
+#' Steam appid and returns scraped data about the game
 #'
 #' @param appid A Steam appid
 #' @return A tibble with game data 
@@ -129,11 +139,16 @@ scrape_ign <- function(game, appid) {
   
   url = str_c("https://www.ign.com/games/", name)
   
-  # If ign page does not exist then send a warning message to consile and set html to null
+  # If ign page does not exist then 
+  # send a warning message to consile and set html to null
+  
   html <- tryCatch(
     read_html(url),
     error = function(e) {
-      message("Failed to scrape: ", game, " | URL: ", url, " | Error: ", e$message, "\n")
+      message("Failed to scrape: ",
+              game, " | URL: ", 
+              url, " | Error: ", 
+              e$message, "\n")
       return(NULL)
     }
   )
@@ -160,12 +175,15 @@ scrape_ign <- function(game, appid) {
     community_score = com_score[2]
   )
 }
-
-
 ```
 
 ```{r}
-# This is some code to scrape top appid but we are using manual for now due to some issues with this having non games and having games that are no longer aviable.
+#| warning: false
+#| message: false
+
+# This is some code to scrape top appid but we are using manual 
+# for now due to some issues with this having non games and having 
+# games that are no longer aviable.
 
 # response <- GET("https://steamspy.com/api.php?request=all")
 # 
@@ -173,27 +191,32 @@ scrape_ign <- function(game, appid) {
 # 
 # games <- numeric()
 # 
-# for (i in 1:500) {
+# for (i in 1:20) {
 #   games <- c(games, raw_data[[i]]$appid)
 # }
 
+
 # Manual scrape of top 250 peak games app_ids
-
 games_df <- read.csv("app_ids.csv", header = FALSE)
-
 games <- as.vector(unlist(games_df[1, ]))
 
+head(games, n = 10)
+
+# Scrape steam data
 steam_rows <- map(games, scrape_steam_game)
 steam_data <- bind_rows(steam_rows)
 
-ign_rows <-map2(steam_data$Name, steam_data$appid, scrape_ign)
+head(steam_data, n = 10)
+
+# Scrape ign data 
+ign_rows <-map2(steam_data$name, steam_data$appid, scrape_ign)
 ign_data <- bind_rows(ign_rows)
+
+head(ign_data, n = 10)
 
 game_data <- steam_data |>
   full_join(ign_data, by = "appid")
-
 write_csv(game_data, "video_games.csv")
+
+head(game_data, n = 10)
 ```
-
-
-
