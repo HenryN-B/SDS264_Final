@@ -51,7 +51,7 @@ parse_genres <- function(genres_list) {
 scrape_steam_game <- function(appid) {
   
   # wait can only request 200 every 5 minutes,
-  Sys.sleep(1.5)
+  Sys.sleep(2.5)
   
   # Get game data from API
   game_response <- GET(
@@ -114,7 +114,8 @@ scrape_steam_game <- function(appid) {
     metacritic_score = game$metacritic$score,
     player_count = player_count,
     min_pc_cpu = cpu,
-    min_pc_gpu = gpu
+    min_pc_gpu = gpu,
+    main_img = game$header_image
   )
 }
 
@@ -181,20 +182,6 @@ scrape_ign <- function(game, appid) {
 #| warning: false
 #| message: false
 
-# This is some code to scrape top appid but we are using manual 
-# for now due to some issues with this having non games and having 
-# games that are no longer aviable.
-
-# response <- GET("https://steamspy.com/api.php?request=all")
-# 
-# raw_data <- content(response, "parsed")
-# 
-# games <- numeric()
-# 
-# for (i in 1:20) {
-#   games <- c(games, raw_data[[i]]$appid)
-# }
-
 
 # Manual scrape of top 250 peak games app_ids
 games_df <- read.csv("app_ids.csv", header = FALSE)
@@ -216,7 +203,7 @@ head(ign_data, n = 10)
 
 game_data <- steam_data |>
   full_join(ign_data, by = "appid")
-write_csv(game_data, "video_games.csv")
+write_csv(game_data, "video_games_updated.csv")
 
 head(game_data, n = 10)
 ```
