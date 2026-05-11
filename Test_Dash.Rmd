@@ -72,7 +72,7 @@ inputPanel(
     choices = c(
       "player_count" = "player_count",
       "metacritic_score" = "metacritic_score",
-      "ign_score" =  "ign_score", #THESE LINES DO NOT WORK AS INTENDED ALSO PROBLEMS SELECTING MUTIPLE 
+      "ign_score" =  "ign_score", #PROBLEMS SELECTING MUTIPLE 
       "community_score" = "community_score"), selected = "player_count")
     )
 
@@ -81,8 +81,7 @@ inputPanel(
 
 Row
 -------------------------
-We wanted to see how if there was a difference in mean rating between different genres. To explore this question, we looked at the 3 different rating across different genres.
-
+We wanted to see how a game's price affects its ratings. To investigate this we will explore the relationship between price and ratings using smoother line plots. 
 
 ### Visualization Between Genres.
 ```{r echo = FALSE}
