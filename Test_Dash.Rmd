@@ -58,8 +58,49 @@ renderPlot({
 })
 ```
 
-Price 
+Price & Reviews
 ==========================
+
+
+Inputs {.sidebar}
+-------------------------
+
+```{r, echo=FALSE}
+inputPanel(
+  selectInput("yvars",
+    label = "Select The Y axis:",
+    choices = c(
+      "player_count" = "player_count",
+      "metacritic_score" = "metacritic_score",
+      "ign_score" =  "ign_score", #THESE LINES DO NOT WORK AS INTENDED ALSO PROBLEMS SELECTING MUTIPLE 
+      "community_score" = "community_score"), selected = "player_count")
+    )
+
+```
+
+
+Row
+-------------------------
+We wanted to see how if there was a difference in mean rating between different genres. To explore this question, we looked at the 3 different rating across different genres.
+
+
+### Visualization Between Genres.
+```{r echo = FALSE}
+renderPlot({
+  req(input$yvars)
+  
+  video_games |>
+    filter(
+      !is.na(ign_score),
+      ign_score != "NR",
+      community_score != "-"
+    ) |>
+    ggplot(aes(x = price, y = as.numeric(.data[[input$yvars]]))) +
+    geom_smooth() +
+    theme_bw()
+})
+
+```
 
 Text analysis 
 ==========================
