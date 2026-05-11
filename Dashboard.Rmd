@@ -82,10 +82,10 @@ inputPanel(
 
 Row
 -------------------------
-We wanted to see how if there was a difference in mean rating between different genres. To explore this question, we looked at the 3 different rating across different genres.
 
+We wanted to see how a game's price affects its ratings. To investigate this we will explore the relationship between price and ratings using smoother line plots. 
 
-### Visualization Between Genres.
+### Visualization of How Price Affects Ratings
 ```{r echo = FALSE}
 renderPlot({
   req(input$yvars)
@@ -97,7 +97,7 @@ renderPlot({
       community_score != "-"
     ) |>
     ggplot(aes(x = price, y = as.numeric(.data[[input$yvars]]))) +
-    geom_smooth(se=FALSE) +
+    geom_smooth(se=FALSE)+
     theme_bw()
 })
 

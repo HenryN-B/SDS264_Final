@@ -96,10 +96,10 @@ renderPlot({
       community_score != "-"
     ) |>
     ggplot(aes(x = price, y = as.numeric(.data[[input$yvars]]))) +
-    geom_smooth() +
+    geom_smooth(se=FALSE)+
+    geom_point()+ #may not use dots in final
     theme_bw()
 })
-
 ```
 
 Text analysis 
