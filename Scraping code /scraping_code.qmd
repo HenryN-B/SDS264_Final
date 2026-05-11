@@ -184,7 +184,7 @@ scrape_ign <- function(game, appid) {
 
 
 # Manual scrape of top 250 peak games app_ids
-games_df <- read.csv("app_ids.csv", header = FALSE)
+games_df <- read.csv("data/app_ids.csv", header = FALSE)
 games <- as.vector(unlist(games_df[1, ]))
 
 head(games, n = 10)
@@ -203,7 +203,7 @@ head(ign_data, n = 10)
 
 game_data <- steam_data |>
   full_join(ign_data, by = "appid")
-write_csv(game_data, "video_games_updated.csv")
+write_csv(game_data, "data/video_games_updated.csv")
 
 head(game_data, n = 10)
 ```
