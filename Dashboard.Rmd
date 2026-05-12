@@ -140,7 +140,7 @@ inputPanel(
 Row
 -------------------------
 
-We wanted to see how a game's price affects its ratings. To investigate this we will explore the relationship between price and ratings using smoother line plots. 
+We wanted to see how a game's price affects its ratings. To investigate this we will explore the relationship between price and ratings using smoother line plots. While player count is not a traditional rating it is an interesting secondary kind of rating.
 
 ### Visualization of How Price Affects Ratings
 ```{r echo = FALSE}
@@ -151,10 +151,11 @@ renderPlot({
     filter(
       !is.na(ign_score),
       ign_score != "NR",
-      community_score != "-"
+      community_score != "-", 
     ) |>
     ggplot(aes(x = price, y = as.numeric(.data[[input$yvars]]))) +
     geom_smooth(se=FALSE)+
+    labs (x= "Price (USD)", y= "Your Choice Rating")+
     theme_bw()
 })
 
@@ -171,17 +172,20 @@ Another consideration is if professional reviews agree with the people they purp
     filter(
       !is.na(ign_score),
       ign_score != "NR",
-      community_score != "-"
+      community_score != "-",
+      !is.na(metacritic_score)
     ) |>
   mutate(
-    dev_score = (as.numeric(ign_score) + as.numeric(community_score)) / 2
+    dev_score = (as.numeric(ign_score)*10 + as.numeric(metacritic_score)) / 2
   )|>
     ggplot(aes(x = community_score, y = dev_score)) +
     geom_smooth(se=FALSE, method = lm)+
     geom_jitter(size = 0.9, alpha = 0.4, width = .5)+
+    labs(x = "Community Rating", y = "Professional Rating") +
     theme_bw()
 
 ```
+
 
 
 Text analysis 
