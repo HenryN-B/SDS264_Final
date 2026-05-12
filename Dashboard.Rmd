@@ -114,12 +114,9 @@ renderPlot({
     ) 
 })
 ```
-<<<<<<< HEAD
-Price & Reviews
-=======
+
 
 Reviews
->>>>>>> 15500f777d373f3b307a9107b9c73294202313dc
 ==========================
 
 
@@ -189,6 +186,9 @@ Another consideration is if professional reviews agree with the people they purp
 
 Text analysis 
 ==========================
+WIP
 
 Full Database
 ==========================
+
+WIP
