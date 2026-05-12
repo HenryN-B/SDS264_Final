@@ -108,6 +108,7 @@ Row
 
 Another consideration is if professional reviews agree with the people they purport to represent. We can represent this with a jittered scatter plot.
 
+### Visualization of Professional Ratings and Community Ratings
 ```{r echo=FALSE}
   video_games |>
     filter(
