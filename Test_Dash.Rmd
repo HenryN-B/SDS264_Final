@@ -58,7 +58,7 @@ renderPlot({
 })
 ```
 
-Price & Reviews
+Reviews
 ==========================
 
 
@@ -101,8 +101,33 @@ renderPlot({
 })
 ```
 
+Row
+-------------------------
+
+Another consideration is if professional reviews agree with the people they purport to represent 
+
+```{r echo=FALSE}
+  video_games |>
+    filter(
+      !is.na(ign_score),
+      ign_score != "NR",
+      community_score != "-"
+    ) |>
+  mutate(
+    dev_score = (as.numeric(ign_score) + as.numeric(community_score)) / 2
+  )|>
+    ggplot(aes(x = community_score, y = dev_score)) +
+    geom_smooth(se=FALSE)+
+    geom_point()+ #may not use dots in final
+    theme_bw()
+
+```
+
+
 Text analysis 
 ==========================
 
 Full Database
 ==========================
+
+**WIP**
