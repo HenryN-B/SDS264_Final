@@ -1,0 +1,134 @@
+---
+title: "Draft Dash"
+output: flexdashboard::flex_dashboard
+runtime: shiny
+---
+
+```{r global, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(shiny)
+
+video_games <- read_csv("data/video_games_updated.csv")
+```
+
+Home
+==========================
+
+Column {data-width = 200}
+-------------------------
+
+**Background Information**
+
+Here we will put Intro, backgroud info on the subject, our names, also sources, and a link to our data.
+
+Genres
+==========================
+
+Inputs {.sidebar}
+-------------------------
+
+```{r, echo=FALSE}
+inputPanel(
+  selectInput("genre", label = "Select Genre(s)",
+              choices = c("Action", "Adventure", "Massively Multiplayer", "Free To Play", "RPG", "Indie", "Early Access", "Strategy", "Casual", "Simulation", "Sports", "Racing"), 
+              selected = "Action", multiple = TRUE))
+```
+
+
+Row
+-------------------------
+We wanted to see how if there was a difference in mean rating between different genres. To explore this question, we looked at the 3 different rating across different genres.
+
+
+### Visualization Between Genres.
+```{r echo = FALSE}
+renderPlot({
+  video_games |>
+    separate_rows(genres, sep = ", ") |>
+    filter(str_detect(genres, str_c(input$genre, collapse = "|")) 
+           & !is.na(ign_score) 
+           & ign_score != "NR") |>
+    ggplot(aes(x = genres, y = as.numeric(ign_score))) +
+    geom_boxplot() +
+    theme_bw() +
+    labs(x = "Genres", 
+         y = "IGN Score (1-10)",
+         title = "")
+})
+```
+
+Price & Reviews
+Reviews
+==========================
+
+
+Inputs {.sidebar}
+-------------------------
+
+```{r, echo=FALSE}
+inputPanel(
+  selectInput("yvars",
+    label = "Select The Y axis:",
+    choices = c(
+      "player_count" = "player_count",
+      "metacritic_score" = "metacritic_score",
+      "ign_score" =  "ign_score", #PROBLEMS SELECTING MUTIPLE 
+      "community_score" = "community_score"), selected = "player_count")
+    )
+
+```
+
+
+Row
+-------------------------
+We wanted to see how a game's price affects its ratings. To investigate this we will explore the relationship between price and ratings using smoother line plots. 
+
+### Visualization Between Genres.
+```{r echo = FALSE}
+renderPlot({
+  req(input$yvars)
+  
+  video_games |>
+    filter(
+      !is.na(ign_score),
+      ign_score != "NR",
+      community_score != "-"
+    ) |>
+    ggplot(aes(x = price, y = as.numeric(.data[[input$yvars]]))) +
+    geom_smooth(se=FALSE)+
+    geom_point()+ #may not use dots in final
+    theme_bw()
+})
+```
+
+Row
+-------------------------
+
+Another consideration is if professional reviews agree with the people they purport to represent 
+
+```{r echo=FALSE}
+  video_games |>
+    filter(
+      !is.na(ign_score),
+      ign_score != "NR",
+      community_score != "-"
+    ) |>
+  mutate(
+    dev_score = (as.numeric(ign_score) + as.numeric(community_score)) / 2
+  )|>
+    ggplot(aes(x = community_score, y = dev_score)) +
+    geom_smooth(se=FALSE)+
+    geom_point()+ #may not use dots in final
+    theme_bw()
+
+```
+
+
+Text analysis 
+==========================
+
+Full Database
+==========================
+
+**WIP**
