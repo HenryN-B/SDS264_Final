@@ -149,7 +149,7 @@ sentiment_scores <- review_data |>
   summarise(sentiment_score = mean(sentiment == "positive") - mean(sentiment == "negative")) |>
   arrange(desc(sentiment_score))
 
-write_csv(review_data, "data/sentiment_scores.csv")
+write_csv(sentiment_scores, "data/sentiment_scores.csv")
 ```
 
 

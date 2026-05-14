@@ -260,7 +260,7 @@ Column
 
 ### Games
 
-```{r}
+```{r echo = FALSE}
 filtered_games <- reactive({
   video_games |>
     filter(
