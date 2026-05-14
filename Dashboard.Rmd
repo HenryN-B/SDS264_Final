@@ -10,6 +10,7 @@ runtime: shiny
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(shiny)
+library(DT)
 
 video_games <- read_csv("data/video_games_updated.csv")
 ```
@@ -26,14 +27,16 @@ Video games are one of the fastest-growing entertainment industries in the world
 billions in revenue and attracting audiences across every demographic. But how do critics and
 players actually agree or maybe disagree on what critria makes a game good?
 
-This dashboard explores video game data across genres, platforms, and time using
+In This dashboard we explore video game data across genres, platforms, and time using
 three distinct rating systems:
 
 - **Metacritic Score** — an aggregated critic score (0–100)
 - **IGN Score** —  A editorial scores (0–10)  
 - **Community Score** — user-submitted ratings reflecting player sentiment (0–10)
 
-We hope that by comparing these sources side by side, we can uncover patterns in how different genres are received.
+We hope that by comparing these sources side by side with the different critria, we can uncover patterns in how different genres are received and what makes games better.
+
+We also will do some text analysis to see patterns in user submitted text steam reviews 
 
 ```{r}
 knitr::include_graphics(img_url)
@@ -47,14 +50,21 @@ Row
 
 This project was created by Sam Brumbaugh, and Henry Norton-Bower.
 
-All source code for this project is located [https://github.com/HenryN-B/Mini-Project-2](In this git repository)
+All source code for this project is located [in this git repo](https://github.com/HenryN-B/Mini-Project-2)
 
 Row
 -------------------------
 
 ### Data & Sources
 
-**Will add stuff later.**
+The dataset used in this project was created and compiled by Sam, and Henry using API calling and web scraping on 2 main sources.
+
+- Using the steam API [from the steam store](https://store.steampowered.com).
+- Scraping the [IGN game review page](https://www.ign.com/reviews/games).
+
+To scrape this data we first had to hand compile a list of 400 steam app id's which is a number associated with every steam game. We explored ways to automate this process, but in the end we where not getting the results we wanted. Maybe in future work this is sometime we could explore further. 
+
+The list of game was the top 400 games with the highest peak player count after accounting for bot activity. With this list we first scraped all of the steam data, then used the game names to scrape the IGN data.
 
 Genres
 ==========================
@@ -195,4 +205,58 @@ WIP
 Full Database
 ==========================
 
-WIP
+Inputs {.sidebar}
+-------------------------
+```{r, echo=FALSE}
+inputPanel(
+  selectInput("genre", label = "Genre(s)",
+              choices = c("Action", "Adventure", "Massively Multiplayer", "Free To Play", "RPG", "Indie", "Early Access", "Strategy", "Casual", "Simulation", "Sports", "Racing"), 
+              selected = "Action", multiple = TRUE),
+  sliderInput("price", label = "Price Range", min = 0, max = 100, value = c(0,100)),
+  
+  checkboxGroupInput("platform", label= "Playable Platforms", c("Windows", "Mac", "Linux"), selected =  c("Windows", "Mac", "Linux"), inline = T))
+```
+
+
+Column
+-------------------------------------
+
+### Games
+
+```{r}
+filtered_games <- reactive({
+  video_games |>
+    filter(
+      price >= input$price[1],
+      price <= input$price[2],
+      str_detect(genres, str_c(input$genre, collapse = "|")),
+      ("Windows" %in% input$platform & isWindows == 1) |
+      ("Mac" %in% input$platform & isMac == 1) |
+      ("Linux" %in% input$platform & isLinux == 1)
+    ) |>
+    select(
+      "Name"            = name,
+    "Price"           = price,
+       "Release Date"    = release,
+      "Developer"       = developer,
+      "Publisher"       = publisher,
+      "IGN Score"       = ign_score,
+      "Community Score" = community_score,
+     main_img
+    )
+})
+
+renderDT({
+  filtered_games() |>
+    mutate(main_img = str_c('<img src="', main_img, '" height="90"/>')) |>
+    datatable(
+      escape = FALSE,
+      options = list(
+        pageLength = 15,
+        scrollX = FALSE,
+        autoWidth = TRUE
+      ),
+      rownames = FALSE
+    )
+})
+```
