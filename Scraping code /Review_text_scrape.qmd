@@ -155,14 +155,15 @@ write_csv(sentiment_scores, "data/sentiment_scores.csv")
 
 
 ```{r}
-review_data |>
+tf_idf <- review_data |>
   unnest_tokens(word, text_clean) |>
   anti_join(stop_words) |>  
   separate_rows(genres, sep = ", ") |>
   count(genres, word) |>
   bind_tf_idf(word, genres, n) |>
-  arrange(desc(tf_idf)) |>
-  filter(genres == "Indie")
+  arrange(desc(tf_idf))
+
+write_csv(tf_idf, "data/term_freq.csv")
 ```
 
 
