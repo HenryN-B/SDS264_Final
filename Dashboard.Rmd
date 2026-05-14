@@ -73,10 +73,17 @@ Inputs {.sidebar}
 -------------------------
 
 ```{r, echo=FALSE}
+
+
+genre_choices <- c("Action", "Adventure", "Massively Multiplayer", "Free To Play", 
+                   "RPG", "Indie", "Early Access", "Strategy", "Casual", 
+                   "Simulation", "Sports", "Racing")
+
 inputPanel(
-  selectInput("genre", label = "Select Genre(s)",
-              choices = c("Action", "Adventure", "Massively Multiplayer", "Free To Play", "RPG", "Indie", "Early Access", "Strategy", "Casual", "Simulation", "Sports", "Racing"), 
-              selected = "Action", multiple = TRUE),
+  selectInput("genre", label = "Genre(s)",
+              choices  = genre_choices,
+              selected = NULL,
+              multiple = TRUE),
   selectInput("reviewType", label = "Select Review Type",
               choices = c("Metacritic Score" = "metacritic_score", 
             "IGN Score" = "ign_score", 
@@ -93,6 +100,15 @@ Video game scores can vary widely depending on the genre and fast-paced Action t
 
 ### Visualization Between Genres.
 ```{r echo = FALSE}
+
+selected_genres <- reactive({
+  if (is.null(input$genre) || length(input$genre) == 0) {
+    genre_choices                        
+  } else {
+    input$genre
+  }                    
+})
+
 score_labels <- c(
   metacritic_score = "Metacritic Score (0–100)",
   ign_score        = "IGN Score (0–10)",
@@ -110,12 +126,12 @@ video_games_no_na <- video_games |>
 filtered_data <- reactive({
   video_games_no_na |>
     separate_rows(genres, sep = ", ") |>
-    filter(str_detect(genres, str_c(input$genre, collapse = "|")) &
+    filter(str_detect(genres, str_c(selected_genres(), collapse = "|")) &
              !is.na(.data[[input$reviewType]]))
 })
 
 anova_caption <- reactive({
-  if (length(input$genre) > 1) {
+  if (length(selected_genres()) > 1) {
     fit   <- lm(as.formula(paste(input$reviewType, "~ genres")), data = filtered_data())
     f_val <- anova(fit)[["F value"]][1]
     p_val <- anova(fit)[["Pr(>F)"]][1]
@@ -130,7 +146,7 @@ anova_caption <- reactive({
 renderPlot({
   video_games_no_na |>
     separate_rows(genres, sep = ", ") |>
-    filter(str_detect(genres, str_c(input$genre, collapse = "|")) 
+    filter(str_detect(genres, str_c(selected_genres(), collapse = "|")) 
            & !is.na(ign_score) 
            & ign_score != "NR") |>
     ggplot(aes(x = genres, y = .data[[input$reviewType]], fill = genres)) +
@@ -261,6 +277,7 @@ renderPlot({sentiment_data |>
 ### Temp
 Text Here
 
+
 Full Database
 ==========================
 
@@ -269,8 +286,8 @@ Inputs {.sidebar}
 ```{r, echo=FALSE}
 inputPanel(
   selectInput("genre", label = "Genre(s)",
-              choices = c("Action", "Adventure", "Massively Multiplayer", "Free To Play", "RPG", "Indie", "Early Access", "Strategy", "Casual", "Simulation", "Sports", "Racing"), 
-              selected = "Action", multiple = TRUE),
+              choices = c(genre_choices), 
+              selected = NULL, multiple = TRUE),
   sliderInput("price", label = "Price Range", min = 0, max = 100, value = c(0,100)),
   
   checkboxGroupInput("platform", label= "Playable Platforms", c("Windows", "Mac", "Linux"), selected =  c("Windows", "Mac", "Linux"), inline = T))
@@ -283,12 +300,22 @@ Column
 ### Games
 
 ```{r echo = FALSE}
+
+selected_genres <- reactive({
+  if (is.null(input$genre) || length(input$genre) == 0) {
+    genre_choices                        
+  } else {
+    input$genre
+  }                    
+})
+
+
 filtered_games <- reactive({
   video_games |>
     filter(
       price >= input$price[1],
       price <= input$price[2],
-      str_detect(genres, str_c(input$genre, collapse = "|")),
+      str_detect(genres, str_c(selected_genres(), collapse = "|")),
       ("Windows" %in% input$platform & isWindows == 1) |
       ("Mac" %in% input$platform & isMac == 1) |
       ("Linux" %in% input$platform & isLinux == 1)
