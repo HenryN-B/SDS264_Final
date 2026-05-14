@@ -198,9 +198,46 @@ Another consideration is if professional reviews agree with the people they purp
 
 
 
-Text analysis 
+Text Analysis {data-orientation=rows}
 ==========================
-WIP
+
+Row {data-height=70}
+-------------------------------------
+
+We also thought that doing some text analysis would provide interesting insights because Steam reviews can give us direct, unfiltered player opinions at scale. This tab uses data from thousands of user reviews to explore patterns in how players talk about games. Though before proceeding a few things to consider is that from all reviews to weed out non quality reviews, we filtered reviews that had less then 5 words, less then 20 characters , or more then 5 repeating letters. We also deleted repeated reviews.
+
+
+Row {.tabset .tabset-fade}
+-------------------------------------
+### Sentiment
+
+```{r echo =FALSE}
+sentiment_data <- read.csv("data/sentiment_scores.csv")
+
+renderPlot({sentiment_data |>
+  ggplot(aes(x= reorder(genres, sentiment_score),
+             y = sentiment_score,
+             fill = sentiment_score > 0)) +
+  geom_col(show.legend = FALSE) + 
+ geom_hline(yintercept = 0, linewidth = 0.5, color = "grey40") +
+  scale_fill_manual(values = c("TRUE" = "darkgreen", "FALSE" = "darkred")) +
+  coord_flip() +
+  labs(
+      title    = "Net Avg Sentiment Score by Genre",
+      x = NULL,
+      y = "Net Sentiment Score"
+    ) +
+    theme_bw()
+})
+
+```
+
+### Term Frequency
+```{r}
+```
+
+### Temp
+Text Here
 
 Full Database
 ==========================

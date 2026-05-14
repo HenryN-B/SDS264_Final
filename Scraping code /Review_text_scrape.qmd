@@ -140,7 +140,7 @@ review_data <- review_data |>
 
 
 ```{r}
-review_data |>
+sentiment_scores <- review_data |>
   separate_rows(genres, sep = ", ") |>
   unnest_tokens(word, text_clean) |>
   anti_join(stop_words) |> 
@@ -148,6 +148,8 @@ review_data |>
   group_by(genres) |>
   summarise(sentiment_score = mean(sentiment == "positive") - mean(sentiment == "negative")) |>
   arrange(desc(sentiment_score))
+
+write_csv(review_data, "data/sentiment_scores.csv")
 ```
 
 
