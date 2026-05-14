@@ -5,6 +5,8 @@
 .Ruserdata
 .Renviron
 .positai
+.DS_Store
+/.DS_Store
 henry_test.Rmd
 SDS264_Final.Rproj
 Mini_Project_2.Rproj
