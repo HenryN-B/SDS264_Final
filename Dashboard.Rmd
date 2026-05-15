@@ -1,5 +1,5 @@
 ---
-title: "Dash Final"
+title: "Steam Game Dashborad"
 output: flexdashboard::flex_dashboard
 runtime: shiny
 ---
@@ -12,7 +12,10 @@ library(tidyverse)
 library(shiny)
 library(DT)
 library(gt)
+library(wordcloud)
+library(RColorBrewer)
 
+# Load data and genres
 video_games <- read_csv("data/video_games_updated.csv")
 
 term_data <- read_csv("data/term_freq.csv")
@@ -50,6 +53,7 @@ We hope that by comparing these sources side by side with the different critria,
 We also will do some text analysis to see patterns in user submitted text steam reviews 
 
 ```{r}
+# include random img
 knitr::include_graphics(img_url)
 ```
 
@@ -84,6 +88,8 @@ Inputs {.sidebar}
 -------------------------
 
 ```{r, echo=FALSE}
+
+# input for genres tab
 inputPanel(
   selectInput("genre", label = "Genre(s)",
               choices  = c(genre_choices),
@@ -105,7 +111,7 @@ Video game scores can vary widely depending on the genre and fast-paced Action t
 
 ### Visualization Between Genres.
 ```{r echo = FALSE}
-
+#function
 selected_genres <- reactive({
   if (is.null(input$genre) || length(input$genre) == 0) {
     genre_choices                        
@@ -114,12 +120,14 @@ selected_genres <- reactive({
   }                    
 })
 
+# dynamic score labels 
 score_labels <- c(
   metacritic_score = "Metacritic Score (0–100)",
   ign_score        = "IGN Score (0–10)",
   community_score  = "Community Score (0–10)"
 )
 
+# remove na's
 video_games_no_na <- video_games |>
   filter(!is.na(ign_score) | ign_score != "NR" |
            !is.na(metacritic_score) | !is.na(community_score)) |>
@@ -135,6 +143,7 @@ filtered_data <- reactive({
              !is.na(.data[[input$reviewType]]))
 })
 
+# make caption
 anova_caption <- reactive({
   if (length(selected_genres()) > 1) {
     fit   <- lm(as.formula(paste(input$reviewType, "~ genres")), data = filtered_data())
@@ -148,6 +157,7 @@ anova_caption <- reactive({
   } 
 })
 
+# render plot
 renderPlot({
   filtered_data() |>
     ggplot(aes(x = genres, y = .data[[input$reviewType]], fill = genres)) +
@@ -155,10 +165,10 @@ renderPlot({
     geom_jitter(width = 0.2, alpha = 0.2) +
     theme_bw() +
     labs(
-      x       = "Genre",
-      y       = score_labels[input$reviewType],
-      title   = str_c("Distribution of ", score_labels[input$reviewType], " by Genre"),
-      fill    = "Genre",
+      x = "Genre",
+      y = score_labels[input$reviewType],
+      title = str_c("Distribution of ", score_labels[input$reviewType], " by Genre"),
+      fill= "Genre",
       caption = anova_caption()
     )
 })
@@ -298,6 +308,8 @@ Row {.tabset .tabset-fade}
 ### Sentiment
 
 ```{r echo =FALSE}
+
+# Sentiment plot
 renderPlot({sentiment_data |>
   ggplot(aes(x= reorder(genres, sentiment_score),
              y = sentiment_score,
@@ -309,44 +321,49 @@ renderPlot({sentiment_data |>
   labs(
       title    = "Net Avg Sentiment Score by Genre",
       x = NULL,
-      y = "Net Sentiment Score"
+      y = "Net Sentiment Score",
+      caption = str_wrap("Racing and Casual games receive the most positive sentiment in reviews, suggesting players tend to enjoy low-stakes experiences more than complex or competitive ones. On the other end, Sports and Massively Multiplayer games score negatively, likely reflecting frustrated communities driven by competitive pressure and toxicity", width = 100)
     ) +
-    theme_bw()
+    theme_bw() +
+    theme(
+    plot.caption = element_text(
+      size = 12,
+      hjust = 0,      
+    )
+    )
 })
 
 ```
 
 ### Term Frequency
 ```{r echo=FALSE}
+
 fillRow(
-  flex = c(1, 3),
+  flex = c(1, 6),
   selectInput("genre_term", label = "Genre",
               choices = genre_choices,
               selected = "Action"),
-  gt_output("termTable")
+  plotOutput("termCloud") 
 )
 ```
 
 ```{r echo=FALSE}
-output$termTable <- render_gt({
+output$termCloud <- renderPlot({              
   req(input$genre_term)
-  term_data |>
-    filter(genres == input$genre_term) |>
-    arrange(desc(tf_idf)) |>
-    slice_head(n= 10) |>
-    gt() |>
-    tab_header(title = paste("Top Terms —", input$genre_term)) |>
-    cols_label(
-      word   = "word",
-      tf     = "Term Freq",
-      idf    = "IDF",
-      tf_idf = "TF-IDF Score"
-    ) |>
-    fmt_number(
-      columns = c(tf, idf, tf_idf),
-      decimals = 4
-    )
-})
+  
+  cloud_data <- term_data |>
+    filter(genres == input$genre_term, n >= 5) |>
+    slice_max(tf_idf, n = 100)
+  
+  wordcloud(
+    words  = cloud_data$word,
+    freq   = cloud_data$tf_idf,
+    max.words = 100,
+    random.order = FALSE,
+    colors = brewer.pal(8, "Dark2"),
+    scale = c(5, 0.8)
+  )
+}, bg = "transparent")  
 ```
 
 ### Temp
@@ -396,12 +413,12 @@ filtered_games <- reactive({
       ("Linux" %in% input$platform & isLinux == 1)
     ) |>
     select(
-      "Name"            = name,
-    "Price"           = price,
-       "Release Date"    = release,
-      "Developer"       = developer,
-      "Publisher"       = publisher,
-      "IGN Score"       = ign_score,
+      "Name" = name,
+    "Price" = price,
+       "Release Date" = release,
+      "Developer" = developer,
+      "Publisher" = publisher,
+      "IGN Score" = ign_score,
       "Community Score" = community_score,
      main_img
     )
