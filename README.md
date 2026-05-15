@@ -1,11 +1,9 @@
 # Final Project
 
-Dashboard.Rmd is our final dashboard code which is viewable on **Link will go here**
+By Sam Brumbaugh, and Henry Norton-Bower.
 
-**app_ids.csv** is a list of all app ids used in our data set. 
+Dashboard.Rmd is our final dashboard code which is viewable (here)[https://rconnect.stolaf.edu/content/811bd017-1011-440b-9635-c1cb5cf7b2cd]
 
-We use all time player count and took the top **398** games filtering out games that were no longer available or that had suspicious player activity (short term botting).
+All Data is found in data/
 
-**video_games.csv** is the data we scraped for these games, and video_games_reviews is our text data, all located in the /data folder.
-
-Scraping_code.qmd is the code we used to get scrape the data in **video_games.csv**.
+All Scraping code is found in scraping_code/
