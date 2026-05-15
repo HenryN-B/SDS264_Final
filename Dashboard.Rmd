@@ -86,7 +86,7 @@ Inputs {.sidebar}
 ```{r, echo=FALSE}
 inputPanel(
   selectInput("genre", label = "Genre(s)",
-              choices  = genre_choices,
+              choices  = c(genre_choices),
               selected = NULL,
               multiple = TRUE),
   selectInput("reviewType", label = "Select Review Type",
@@ -149,22 +149,18 @@ anova_caption <- reactive({
 })
 
 renderPlot({
-  video_games_no_na |>
-    separate_rows(genres, sep = ", ") |>
-    filter(str_detect(genres, str_c(selected_genres(), collapse = "|")) 
-           & !is.na(ign_score) 
-           & ign_score != "NR") |>
+  filtered_data() |>
     ggplot(aes(x = genres, y = .data[[input$reviewType]], fill = genres)) +
-    geom_boxplot(outlier.alpha = 0.4) +
+    geom_boxplot() +
     geom_jitter(width = 0.2, alpha = 0.2) +
     theme_bw() +
     labs(
-      x     = "Genre",
-      y     = score_labels[input$reviewType],
-      title = str_c("Distribution of ", score_labels[input$reviewType], " by Genre"),
-      fill  = "Genre",
+      x       = "Genre",
+      y       = score_labels[input$reviewType],
+      title   = str_c("Distribution of ", score_labels[input$reviewType], " by Genre"),
+      fill    = "Genre",
       caption = anova_caption()
-    ) 
+    )
 })
 ```
 
@@ -380,7 +376,7 @@ Column
 
 ```{r echo = FALSE}
 
-selected_genres <- reactive({
+selected_genres_db  <- reactive({
   if (is.null(input$genre_db) || length(input$genre_db) == 0) {
     genre_choices                        
   } else {
@@ -394,7 +390,7 @@ filtered_games <- reactive({
     filter(
       price >= input$price[1],
       price <= input$price[2],
-      str_detect(genres, str_c(selected_genres(), collapse = "|")),
+      str_detect(genres, str_c(selected_genres_db(), collapse = "|")),
       ("Windows" %in% input$platform & isWindows == 1) |
       ("Mac" %in% input$platform & isMac == 1) |
       ("Linux" %in% input$platform & isLinux == 1)
