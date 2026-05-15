@@ -169,34 +169,37 @@ renderPlot({
 ```
 
 
-Reviews
+Reviews {data-orientation=rows}
 ==========================
+Row {data-height=10}
+-------------------------------------
 
+These ratings are Metacritic (a critic aggregator), IGN (editorial), and Community (user-submitted). They represent different ways to rate how good games are. 
 
-Inputs {.sidebar}
--------------------------
+Row {.tabset .tabset-fade}
+-------------------------------------
+
+### How Price Affects Ratings
+We wanted to see how a game's price affects its ratings. To investigate this we will explore the relationship between price and ratings using smoother line plots.
+
 
 ```{r, echo=FALSE}
 inputPanel(
   selectInput("yvars",
     label = "Select The Y axis:",
     choices = c(
-      "player_count" = "player_count",
-      "metacritic_score" = "metacritic_score",
-      "ign_score" =  "ign_score",
-      "community_score" = "community_score"), selected = "player_count")
+      "Metacritic Score" = "metacritic_score",
+      "IGN Score" =  "ign_score",
+      "Community Score" = "community_score"), selected = "metacritic_score")
     )
 
 ```
 
 
-Row
--------------------------
 
-We wanted to see how a game's price affects its ratings. To investigate this we will explore the relationship between price and ratings using smoother line plots. While player count is not a traditional rating it is an interesting secondary kind of rating.
 
-### Visualization of How Price Affects Ratings
-```{r echo = FALSE}
+
+```{r echo = FALSE, fig.height= 4}
 renderPlot({
   req(input$yvars)
   
@@ -210,35 +213,80 @@ renderPlot({
     geom_smooth(se=FALSE)+
     labs (x= "Price (USD)", y= "Your Choice Rating")+
     theme_bw()
-})
+}, height = 500)
 
 ```
 
-Row
--------------------------
 
-Another consideration is if professional reviews agree with the people they purport to represent. We can represent this with a jittered scatter plot.
+### Professional Ratings and Community Ratings
+Another consideration is if professional reviews agree with the people they purport to represent. We can represent this with a jittered scatter plot. We get Professional Rating by making IGN score out of 100 and then averaging it with Metacritic Score.
 
-### Visualization of Professional Ratings and Community Ratings
-```{r echo=FALSE}
-  video_games |>
-    filter(
-      !is.na(ign_score),
-      ign_score != "NR",
-      community_score != "-",
-      !is.na(metacritic_score)
-    ) |>
+
+```{r echo=FALSE, fig.height=2.5}
+video_games |>
+  filter(
+    !is.na(ign_score),
+    ign_score != "NR",
+    community_score != "-",
+    !is.na(metacritic_score)
+  ) |>
   mutate(
-    dev_score = (as.numeric(ign_score)*10 + as.numeric(metacritic_score)) / 2
-  )|>
-    ggplot(aes(x = community_score, y = dev_score)) +
-    geom_smooth(se=FALSE, method = lm)+
-    geom_jitter(size = 0.9, alpha = 0.4, width = .5)+
-    labs(x = "Community Rating", y = "Professional Rating") +
-    theme_bw()
+    dev_score = (as.numeric(ign_score) * 10 + as.numeric(metacritic_score)) / 2
+  ) |>
+  ggplot(aes(x = community_score, y = dev_score)) +
+  geom_smooth(se = FALSE, method = lm) +
+  geom_jitter(size = 0.9, alpha = 0.4, width = .5) +
+  labs(x = "Community Rating", y = "Professional Rating") +
+  scale_x_discrete(breaks = \(x) x[seq(1, length(x), by = 3)]) +
+  theme_bw()
 
 ```
 
+### Platform Avalibility
+
+Another interesting question is whether what computer OSs can run the games affects their ratings. We can investigate this using a box plot. Note that games may appear multipule times as all games are on avalible on Windows. 
+```{r echo=FALSE}
+win_only <- video_games |> filter(isWindows == TRUE, isMac == FALSE, isLinux == FALSE)
+linux_aval <- video_games |> filter(isLinux == TRUE)
+mac_aval <- video_games |> filter(isMac == TRUE)
+```
+
+
+```{r echo=FALSE}
+inputPanel(
+  selectInput("xvars",
+    label = "Select Platforms:",
+    choices = c("Windows Only" = "win_only",
+                "Avalible to Mac"     = "mac_aval",
+                "Avalible to Linux"   = "linux_aval"),
+    multiple = TRUE, selected = "win_only"),
+  selectInput("yvars",
+    label = "Select Rating System:",
+    choices = c("Metacritic Score" = "metacritic_score",
+                "IGN Score"        = "ign_score",
+                "Community Score"  = "community_score"))
+)
+```
+
+```{r echo=FALSE, fig.height= 3}
+renderPlot({
+  req(input$xvars, input$yvars)
+  
+  platform_labels <- c("win_only" = "Windows", "mac_aval" = "Mac", "linux_aval" = "Linux")
+  
+  lapply(input$xvars, \(x) get(x) |> mutate(platform = platform_labels[x])) |>
+    bind_rows() |>
+    filter(!is.na(ign_score), ign_score != "NR", community_score != "-") |>
+    mutate(across(all_of(input$yvars), as.numeric)) |>
+    group_by(platform) |>
+    summarise(across(all_of(input$yvars), \(x) mean(x, na.rm = TRUE))) |>
+    pivot_longer(cols = all_of(input$yvars), names_to = "variable", values_to = "score") |>
+    ggplot(aes(x = platform, y = score, fill = platform)) +
+    geom_bar(stat = "identity", position = "dodge") +
+    labs(x = "Platform", y = "Average Score", fill = "Platform") +
+    theme_bw()
+})
+```
 
 Text Analysis {data-orientation=rows}
 ==========================
