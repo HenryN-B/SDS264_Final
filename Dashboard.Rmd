@@ -240,7 +240,6 @@ Another consideration is if professional reviews agree with the people they purp
 ```
 
 
-
 Text Analysis {data-orientation=rows}
 ==========================
 
@@ -284,16 +283,24 @@ fillRow(
 )
 ```
 
-```{r}
-
+```{r echo=FALSE}
 output$termTable <- render_gt({
+  req(input$genre_term)
   term_data |>
     filter(genres == input$genre_term) |>
+    arrange(desc(tf_idf)) |>
+    slice_head(n= 10) |>
     gt() |>
-    tab_header(title = "Term Frequency") |>
+    tab_header(title = paste("Top Terms —", input$genre_term)) |>
     cols_label(
-      term = "Term",
-      n    = "Count"
+      word   = "word",
+      tf     = "Term Freq",
+      idf    = "IDF",
+      tf_idf = "TF-IDF Score"
+    ) |>
+    fmt_number(
+      columns = c(tf, idf, tf_idf),
+      decimals = 4
     )
 })
 ```
