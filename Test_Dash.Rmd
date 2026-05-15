@@ -186,7 +186,7 @@ Another consideration is if professional reviews agree with the people they purp
 
 ```
 
-#Player count vs Rating maybe
+
 
 Text analysis 
 ==========================
@@ -196,3 +196,6 @@ Full Database
 ==========================
 
 WIP
+
+*Ideas*
+**Player count vs number of reviews**
