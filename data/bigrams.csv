@@ -1,0 +1,122 @@
+genres,bigram,n
+Action,fun game,2159
+Action,ive played,1206
+Action,amazing game,1137
+Action,highly recommend,1121
+Action,game ive,866
+Action,resident evil,866
+Action,fatal error,630
+Action,error fatal,615
+Action,love love,600
+Action,games ive,559
+Adventure,fun game,1374
+Adventure,murder murder,1142
+Adventure,ive played,872
+Adventure,highly recommend,867
+Adventure,amazing game,836
+Adventure,game ive,631
+Adventure,fatal error,627
+Adventure,error fatal,615
+Adventure,survival game,577
+Adventure,games ive,446
+Casual,fun game,351
+Casual,highly recommend,132
+Casual,base game,129
+Casual,amazing game,119
+Casual,ive played,100
+Casual,super fun,99
+Casual,pretty fun,95
+Casual,bongo cat,80
+Casual,game ive,75
+Casual,dont play,74
+Early Access,fun game,453
+Early Access,amazing game,205
+Early Access,highly recommend,200
+Early Access,ive played,166
+Early Access,survival game,134
+Early Access,super fun,132
+Early Access,game ive,124
+Early Access,gameplay loop,114
+Early Access,access game,96
+Early Access,art style,92
+Free To Play,fun game,509
+Free To Play,dont play,235
+Free To Play,ive played,222
+Free To Play,free game,192
+Free To Play,player base,176
+Free To Play,amazing game,174
+Free To Play,highly recommend,163
+Free To Play,game ive,158
+Free To Play,gacha game,156
+Free To Play,pretty fun,150
+Indie,fun game,1213
+Indie,fatal error,622
+Indie,error fatal,615
+Indie,amazing game,588
+Indie,highly recommend,558
+Indie,ive played,471
+Indie,survival game,396
+Indie,hollow knight,364
+Indie,super fun,350
+Indie,game ive,346
+Massively Multiplayer,fatal error,620
+Massively Multiplayer,error fatal,615
+Massively Multiplayer,love love,576
+Massively Multiplayer,fun game,340
+Massively Multiplayer,ive played,167
+Massively Multiplayer,survival game,133
+Massively Multiplayer,player base,121
+Massively Multiplayer,dont play,120
+Massively Multiplayer,highly recommend,111
+Massively Multiplayer,game ive,109
+RPG,fun game,925
+RPG,ive played,700
+RPG,highly recommend,647
+RPG,love love,586
+RPG,amazing game,582
+RPG,game ive,472
+RPG,main story,461
+RPG,base game,448
+RPG,survival game,380
+RPG,voice acting,378
+Racing,fun game,72
+Racing,forza horizon,67
+Racing,racing game,51
+Racing,fall guys,35
+Racing,racing games,34
+Racing,story mode,34
+Racing,car game,33
+Racing,gta online,30
+Racing,rocket league,28
+Racing,amazing game,27
+Racing,crash physics,27
+Simulation,fun game,776
+Simulation,love love,588
+Simulation,base game,390
+Simulation,amazing game,378
+Simulation,highly recommend,356
+Simulation,survival game,346
+Simulation,ive played,344
+Simulation,game ive,253
+Simulation,learning curve,213
+Simulation,super fun,207
+Sports,fun game,85
+Sports,career mode,56
+Sports,forza horizon,43
+Sports,racing game,42
+Sports,dont buy,40
+Sports,dont play,39
+Sports,epic games,39
+Sports,rocket league,39
+Sports,ive played,37
+Sports,ultimate team,34
+Strategy,fun game,561
+Strategy,base game,363
+Strategy,amazing game,359
+Strategy,ive played,348
+Strategy,highly recommend,319
+Strategy,total war,315
+Strategy,strategy game,243
+Strategy,vampire survivors,226
+Strategy,game ive,217
+Strategy,learning curve,213

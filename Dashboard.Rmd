@@ -21,6 +21,7 @@ video_games <- read_csv("data/video_games_updated.csv")
 term_data <- read_csv("data/term_freq.csv")
 
 sentiment_data <- read.csv("data/sentiment_scores.csv")
+bigram_data <- read.csv("data/bigrams.csv")
 
 genre_choices <- c("Action", "Adventure", "Massively Multiplayer", "Free To Play", 
                    "RPG", "Indie", "Early Access", "Strategy", "Casual", 
@@ -366,9 +367,41 @@ output$termCloud <- renderPlot({
 }, bg = "transparent")  
 ```
 
-### Temp
+### Bigrams
+```{r echo=FALSE}
+fillRow(
+  flex = c(1, 4),
+  selectInput("genre_term", label = "Genre",
+              choices = genre_choices,
+              selected = "Action"),
+  gt_output("bigramTable")      
+)
+```
 
-Text Here
+```{r echo=FALSE}
+output$bigramTable <- render_gt({           
+  req(input$genre_term)
+  bigram_data |>
+    filter(genres == input$genre_term) |>
+    arrange(desc(n)) |>
+    slice_head(n = 10) |>
+    select(bigram, n) |>
+    gt() |>
+    tab_header(title = paste("Top Bigrams —", input$genre_term)) |>
+    cols_label(
+      bigram = "Word Pair",
+      n = "Count"
+    ) |>
+    data_color(
+      columns = n,
+      palette = "Greens"
+    ) |>
+    tab_options(
+      table.width = pct(100)
+    )
+})
+```
+
 
 Full Database
 ==========================

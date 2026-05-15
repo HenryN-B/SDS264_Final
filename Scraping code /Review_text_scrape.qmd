@@ -161,20 +161,35 @@ tf_idf <- review_data |>
   separate_rows(genres, sep = ", ") |>
   count(genres, word) |>
   bind_tf_idf(word, genres, n) |>
-  arrange(desc(tf_idf))
+  group_by(genres) |>
+  arrange(desc(tf_idf)) |>
+  slice_head(n = 100) |>
+  ungroup() 
 
 write_csv(tf_idf, "data/term_freq.csv")
 ```
 
 
+
 ```{r}
-review_data |>
-  unnest_tokens(bigram, text, token = "ngrams", n = 2) |>
+bigrams <- review_data |>
   separate_rows(genres, sep = ", ") |>
-  filter(bigram != "NA")  |>
-  separate(bigram, c("word1", "word2"), sep = " ") |>
-  filter(!word1 %in% stop_words$word,
-         !word2 %in% stop_words$word) |>
-  count(word1, word2, sort = TRUE)
+  unnest_tokens(bigram, text_clean, token = "ngrams", n = 2) |>
+  filter(!is.na(bigram)) |>
+  separate(bigram, into = c("word1", "word2"), sep = " ") |>
+  filter(
+    !word1 %in% stop_words$word,
+    !word2 %in% stop_words$word
+  ) |>
+  unite(bigram, word1, word2, sep = " ") |>
+  count(genres, bigram, sort = TRUE) |>
+  group_by(genres) |>
+  slice_max(n, n = 10) |>        
+  ungroup() |>
+  arrange(genres, desc(n))
+
+write_csv(bigrams, "data/bigrams.csv")
+
+bigrams
 ```
 
